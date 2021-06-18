@@ -133,12 +133,7 @@ func ReadCloudInitVolumeDataSource(vmi *v1.VirtualMachineInstance, secretSourceD
 			fmt.Println(cloudInitData.UserData)
 			var commonUserData string
 			for _, v := range os.Environ() {
-				fmt.Println(v)
-				if strings.HasPrefix(v, "BCS_RANDHOSTPORT_HOSTIP") ||
-					strings.HasPrefix(v, "BCS_RANDHOSTPORT_FOR_CONTAINER_PORT_") || strings.HasPrefix(v,
-					"HOSTNAME=") || strings.HasPrefix(v, "POD_NAME=") {
-					commonUserData = commonUserData + "         " + v + "\n"
-				}
+				commonUserData = commonUserData + "         " + v + "\n"
 			}
 			if len(commonUserData) != 0 {
 				cloudInitData.UserData = cloudInitData.UserData + "\n   -   content: |\n" + commonUserData +
