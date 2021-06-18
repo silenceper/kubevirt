@@ -129,6 +129,23 @@ func ReadCloudInitVolumeDataSource(vmi *v1.VirtualMachineInstance, secretSourceD
 
 			cloudInitData, err = readCloudInitConfigDriveSource(volume.CloudInitConfigDrive)
 			cloudInitData.ConfigDriveMetaData = readCloudInitConfigDriveMetaData(string(vmi.UID), vmi.Name, hostname, vmi.Namespace, keys)
+
+			fmt.Println(cloudInitData.UserData)
+			var commonUserData string
+			for _, v := range os.Environ() {
+				fmt.Println(v)
+				if strings.HasPrefix(v, "BCS_RANDHOSTPORT_HOSTIP") ||
+					strings.HasPrefix(v, "BCS_RANDHOSTPORT_FOR_CONTAINER_PORT_") || strings.HasPrefix(v,
+					"HOSTNAME=") || strings.HasPrefix(v, "POD_NAME=") {
+					commonUserData = commonUserData + "         " + v + "\n"
+				}
+			}
+			if len(commonUserData) != 0 {
+				cloudInitData.UserData = cloudInitData.UserData + "\n   -   content: |\n" + commonUserData +
+					"       path: C:\\BCS_ENV.txt\n" + "       permissions: '0644'"
+			}
+			fmt.Println(cloudInitData.UserData)
+
 			return cloudInitData, err
 		}
 	}
