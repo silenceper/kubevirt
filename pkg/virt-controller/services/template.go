@@ -1324,6 +1324,7 @@ func (t *templateService) renderLaunchManifest(vmi *v1.VirtualMachineInstance, i
 			ImagePullPolicy: requestedHookSidecar.ImagePullPolicy,
 			Command:         requestedHookSidecar.Command,
 			Args:            requestedHookSidecar.Args,
+			Env:             requestedHookSidecar.Env,
 			Resources:       resources,
 			SecurityContext: &k8sv1.SecurityContext{
 				RunAsUser:  &userId,
