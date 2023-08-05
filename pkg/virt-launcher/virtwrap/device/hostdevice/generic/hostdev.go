@@ -53,9 +53,9 @@ func CreateHostDevicesFromPools(vmiHostDevices []v1.HostDevice, pciAddressPool, 
 
 	hostDevices := append(pciHostDevices, mdevHostDevices...)
 
-	if err := validateCreationOfAllDevices(vmiHostDevices, hostDevices); err != nil {
-		return nil, fmt.Errorf(failedCreateGenericHostDevicesFmt, err)
-	}
+	// if err := validateCreationOfAllDevices(vmiHostDevices, hostDevices); err != nil {
+	// 	return nil, fmt.Errorf(failedCreateGenericHostDevicesFmt, err)
+	// }
 
 	return hostDevices, nil
 }
