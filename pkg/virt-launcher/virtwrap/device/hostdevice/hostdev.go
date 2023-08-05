@@ -102,7 +102,7 @@ func createPCIHostDevice(hostDeviceData HostDeviceMetaData, hostPCIAddress strin
 		return nil, fmt.Errorf("failed to create PCI device for %s: %v", hostDeviceData.Name, err)
 	}
 	domainHostDevice := &api.HostDevice{
-		Alias:   api.NewUserDefinedAlias(hostDeviceData.AliasPrefix + hostDeviceData.Name),
+		Alias:   api.NewUserDefinedAlias(hostDeviceData.AliasPrefix + hostDeviceData.Name + hostAddr.Function),
 		Source:  api.HostDeviceSource{Address: hostAddr},
 		Type:    "pci",
 		Managed: "no",
