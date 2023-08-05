@@ -26,6 +26,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"google.golang.org/grpc"
 
@@ -84,7 +85,15 @@ func (s v1alpha2Server) PreCloudInitIso(ctx context.Context, params *hooksV1alph
 		panic(err)
 	}
 
-	cloudInitData.UserData = "#cloud-config\n"
+	appendUserData := `
+#ps1_sysnative
+$content1 = @"
+VM_POD_IP=${MY_POD_IP}
+"@
+Set-Content -Path "C:\BCS_ENV.txt" -Value $content1
+`
+	appendUserData = strings.Replace(appendUserData, "VM_POD_IP=${MY_POD_IP}", "VM_POD_IP="+os.Getenv("MY_POD_IP"), -1)
+	cloudInitData.UserData += appendUserData
 
 	response, err := json.Marshal(cloudInitData)
 	if err != nil {
