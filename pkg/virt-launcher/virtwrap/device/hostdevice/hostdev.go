@@ -21,6 +21,7 @@ package hostdevice
 
 import (
 	"fmt"
+	"strings"
 
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/log"
@@ -61,28 +62,36 @@ func createHostDevices(hostDevicesData []HostDeviceMetaData, addrPool AddressPoo
 	var hostDevices []api.HostDevice
 
 	for _, hostDeviceData := range hostDevicesData {
-		address, err := addrPool.Pop(hostDeviceData.ResourceName)
+		addressStr, err := addrPool.Pop(hostDeviceData.ResourceName)
 		if err != nil {
 			return nil, fmt.Errorf(failedCreateHostDeviceFmt, hostDeviceData.Name, err)
 		}
 
 		// if pop succeeded but the address is empty, ignore the device and let the caller
 		// decide if this is acceptable or not.
-		if address == "" {
+		if addressStr == "" {
 			continue
 		}
 
-		hostDevice, err := createHostDev(hostDeviceData, address)
-		if err != nil {
-			return nil, fmt.Errorf(failedCreateHostDeviceFmt, hostDeviceData.Name, err)
-		}
-		if hostDeviceData.DecorateHook != nil {
-			if err := hostDeviceData.DecorateHook(hostDevice); err != nil {
+		//检查addressStr 是有分号(处理同一个iommu group下的多个设备同时分配比如显卡和声卡)
+		log.Log.Infof("host-device address: %s", addressStr)
+		addressArr := strings.Split(addressStr, ";")
+		for _, address := range addressArr {
+			if address == "" {
+				continue
+			}
+			hostDevice, err := createHostDev(hostDeviceData, address)
+			if err != nil {
 				return nil, fmt.Errorf(failedCreateHostDeviceFmt, hostDeviceData.Name, err)
 			}
+			if hostDeviceData.DecorateHook != nil {
+				if err := hostDeviceData.DecorateHook(hostDevice); err != nil {
+					return nil, fmt.Errorf(failedCreateHostDeviceFmt, hostDeviceData.Name, err)
+				}
+			}
+			hostDevices = append(hostDevices, *hostDevice)
+			log.Log.Infof("host-device created: %s", address)
 		}
-		hostDevices = append(hostDevices, *hostDevice)
-		log.Log.Infof("host-device created: %s", address)
 	}
 	return hostDevices, nil
 }

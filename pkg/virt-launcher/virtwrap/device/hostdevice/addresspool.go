@@ -71,15 +71,32 @@ func (p *AddressPool) Pop(resource string) (string, error) {
 	}
 
 	if len(addresses) > 0 {
-		selectedAddress := addresses[0]
-
-		for resourceName, resourceAddresses := range p.addressesByResource {
-			p.addressesByResource[resourceName] = filterOutAddress(resourceAddresses, selectedAddress)
+		samePrefixPCIAddress := groupSamePrefixPCIAddress(addresses)
+		selectedAddress := samePrefixPCIAddress[0]
+		for _, address := range selectedAddress {
+			for resourceName, resourceAddresses := range p.addressesByResource {
+				p.addressesByResource[resourceName] = filterOutAddress(resourceAddresses, address)
+			}
 		}
 
-		return selectedAddress, nil
+		return strings.Join(selectedAddress, ";"), nil
 	}
 	return "", fmt.Errorf("no more addresses to allocate for resource %s", resource)
+}
+
+func groupSamePrefixPCIAddress(addresses []string) [][]string {
+	prefixMap := make(map[string][]string)
+	for _, address := range addresses {
+		prefix := strings.Split(address, ".")[0]
+		prefixMap[prefix] = append(prefixMap[prefix], address)
+	}
+	var result [][]string
+	for _, values := range prefixMap {
+		if len(values) > 1 {
+			result = append(result, values)
+		}
+	}
+	return result
 }
 
 func filterOutAddress(addrs []string, addr string) []string {
