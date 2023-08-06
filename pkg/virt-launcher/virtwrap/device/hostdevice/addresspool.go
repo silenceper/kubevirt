@@ -92,9 +92,7 @@ func groupSamePrefixPCIAddress(addresses []string) [][]string {
 	}
 	var result [][]string
 	for _, values := range prefixMap {
-		if len(values) > 1 {
-			result = append(result, values)
-		}
+		result = append(result, values)
 	}
 	return result
 }
